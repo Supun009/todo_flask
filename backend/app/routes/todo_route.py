@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from app.models.todo import Todo
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from datetime import datetime
 
 todo_bp = Blueprint('todo', __name__)
 
@@ -12,22 +13,28 @@ def get_todos():
 
     todos = Todo.get_todos(user_id)
 
-    todo_list = [{"id": str(todo["_id"]), "task": todo["task"], "completed": todo["completed"], "created_at": todo["created_at"]} for todo in todos]
+    todo_list = [{"todo_id": todo["todo_id"], "task": todo["task"], "completed": todo["completed"], "created_at": todo["created_at"]} for todo in todos]
     return jsonify({"todo_list": todo_list}), 200
 
 @todo_bp.route('/add-todo', methods=['POST'])
 @jwt_required()
 def create_todo():
     user_id = get_jwt_identity()
-    print(user_id)
+    
 
+    
     data = request.get_json()
+    print(data)
 
-    task = data.get("task")
+    newtodo = data.get("newtodo")
+    task = newtodo.get("task")
+    todo_id = newtodo.get("todo_id")
+    created_at = datetime.now()
+
     if not task:
         return jsonify({"message": "Task is required"}), 400
 
-    Todo.create_todo(task, user_id)
+    Todo.create_todo(task, user_id, todo_id, created_at)
 
     return jsonify({"message": "Todo created successfully"}), 201
 
@@ -60,10 +67,12 @@ def delete_todo(todo_id):
         return jsonify({"message": "Todo not found"}), 404
     
 
-@todo_bp.route("/todos/<todo_id>", methods=["POST"])
+@todo_bp.route("/comleted/<todo_id>", methods=["POST"])
 @jwt_required()
 def mark_as_completed(todo_id):
+    data = request.get_json()
+    isCompleted = data.get("isCompleted")
     
-    Todo.mark_as_completed( todo_id, True)
+    Todo.mark_as_completed( todo_id, isCompleted)
 
     return jsonify({"message": "Todo marked as completed"}), 200

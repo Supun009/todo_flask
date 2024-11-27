@@ -9,9 +9,9 @@ class Todo:
         self.created_at = datetime.now()
 
     @classmethod
-    def create_todo(cls, task, user_id, created_at= False):
+    def create_todo(cls, task, user_id, todo_id, created_at):
         try:
-            results = current_app.db.todos.insert_one({"task": task, "user_id": user_id, "completed": created_at, "created_at": datetime.now()})
+            results = current_app.db.todos.insert_one({"task": task, "user_id": user_id, "todo_id" :todo_id, "completed": False, "created_at": created_at})
             return results
         except Exception as e:
             print(f"Error creating todo: {e}")
@@ -36,8 +36,10 @@ class Todo:
     
     @classmethod
     def mark_as_completed(cls, todo_id, completed):
+        print(f"todo id isd ---{todo_id}")
         try:
-            results = current_app.db.todos.update_one({"_id": todo_id}, {"$set": {"completed": completed}})
+            results = current_app.db.todos.update_one({"todo_id": todo_id}, {"$set": {"completed": completed}})
+            
             return results
         except Exception as e:
             print(f"Error updating todo: {e}")
