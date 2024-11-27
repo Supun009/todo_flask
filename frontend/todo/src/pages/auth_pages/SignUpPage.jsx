@@ -7,7 +7,6 @@ import DOMPurify from "dompurify";
 import { Link } from "react-router-dom";
 import { signup } from "../../services/AuthService";
 
-
 export default function SignUpPage() {
   const emailRef = useRef();
   const usernameRef = useRef();
@@ -17,7 +16,7 @@ export default function SignUpPage() {
     email: "",
     username: "",
     password: "",
-});
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -42,21 +41,25 @@ export default function SignUpPage() {
     }
 
     if (Object.keys(errors).length > 0) {
-      setError(errors)
+      setError(errors);
       return;
     }
 
     const sanitizedUsername = DOMPurify.sanitize(username);
     const sanitizedPassword = DOMPurify.sanitize(password);
 
-    const data = { username: sanitizedUsername, password: sanitizedPassword };
+    const data = {
+      email,
+      username: sanitizedUsername,
+      password: sanitizedPassword,
+    };
     handleSignUp(data);
   };
 
-  const handleSignUp = async(data) => {
+  const handleSignUp = async (data) => {
     try {
-      const response  = await signup(data.email, data.username, data.password);
-      console.log(response.data);
+      const response = await signup(data.email, data.username, data.password);
+      console.log(response);
     } catch (error) {
       console.log(error);
     }

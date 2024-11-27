@@ -8,6 +8,7 @@ todo_bp = Blueprint('todo', __name__)
 @jwt_required()
 def get_todos():
     user_id = get_jwt_identity()
+    print(user_id)
 
     todos = Todo.get_todos(user_id)
 
@@ -18,6 +19,7 @@ def get_todos():
 @jwt_required()
 def create_todo():
     user_id = get_jwt_identity()
+    print(user_id)
 
     data = request.get_json()
 

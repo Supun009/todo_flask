@@ -10,38 +10,44 @@ auth_bp = Blueprint('auth', __name__)
 def register():
     data = request.get_json()
 
+    email = data.get("email")
     username = data.get("username")
     password = data.get("password")
 
-    existinguser = User.get_user_by_username(username)
+    existinguser = User.get_user_by_email(email)
     if existinguser:
         return jsonify({"message": "User already exists"}), 400
     
     hashed_password = generate_password_hash(password)
 
-    User.create_user(username, hashed_password)
+    User.create_user(email, username, hashed_password)
 
     return jsonify({"message": "User registered successfully"}), 201
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    print(data)
+    try:
+        data = request.get_json()
+        print(data)
 
-    username = data.get("username")
-    password = data.get("password")
+        email = data.get("email")
+        password = data.get("password")
 
-    user = User.get_user_by_username(username)
-    print(user)
-    if not user:
-        return jsonify({"message": "User not found"}), 401
-
-    ispasswordmatched = User.check_password(username, password)
-    print(ispasswordmatched)
-    if not ispasswordmatched:
-        return jsonify({"message": "Invalid password"}), 401
+        user = User.get_user_by_email(email)
+        print(user)
     
-    access_token = create_access_token(identity=str(user["_id"]))
+        if not user:
+            return jsonify({"message": "User not found"}), 401
 
-    return jsonify({"access_token": access_token}), 200
+        ispasswordmatched = User.check_password(email, password)
+        print(ispasswordmatched)
+        if not ispasswordmatched:
+            return jsonify({"message": "Invalid password"}), 401
+        
+        access_token = create_access_token(identity=str(user["_id"]))
+
+        return jsonify({"access_token": access_token}), 200
+    except Exception as e:
+        print(f"Error logging in: {e}")
+        return jsonify({"message": "Error logging in"}), 500
         
