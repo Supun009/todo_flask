@@ -11,7 +11,7 @@ from pymongo import MongoClient
 load_dotenv()
 
 uri = Config.MONGO_URI  
-print(uri)
+
 try:
     client = MongoClient(uri)
     db = client.get_database()

@@ -1,95 +1,84 @@
 import { useState, useEffect, useRef } from "react";
-import {getAllTodos} from "../../services/TodoServices";
-import {addTodo} from "../../services/TodoServices";
+import { getAllTodos } from "../../services/TodoServices";
+import { addTodo } from "../../services/TodoServices";
+import { markasCompletedDb } from "../../services/TodoServices";
+import { toast } from "react-toastify";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function TodoPage() {
-  const [todos, setTodo] = useState([
-    // {
-    //   task: "Complete the React tutorial",
-    //   user_id: "user123",
-    //   completed: false,
-    //   created_at: "2024-11-27T08:00:00Z",
-    // },
-    // {
-    //   task: "Buy groceries",
-    //   user_id: "user456",
-    //   completed: false,
-    //   created_at: "2024-11-26T10:00:00Z",
-    // },
-    // {
-    //   task: "Write blog post on React",
-    //   user_id: "user789",
-    //   completed: false,
-    //   created_at: "2024-11-28T09:00:00Z",
-    // },
-    // {
-    //   task: "Complete the assignment for school",
-    //   user_id: "user321",
-    //   completed: false,
-    //   created_at: "2024-11-27T12:00:00Z",
-    // },
-    // {
-    //   task: "Complete the assignment for school",
-    //   user_id: "user321",
-    //   completed: false,
-    //   created_at: "2024-11-27T12:00:00Z",
-    // },
-    // {
-    //   task: "Complete the assignment for school",
-    //   user_id: "user321",
-    //   completed: false,
-    //   created_at: "2024-11-27T12:00:00Z",
-    // },
-  ]);
+  const [todos, setTodo] = useState([]);
 
   useEffect(() => {
     const fetchTodos = async () => {
-        try {
-            const todos = await getAllTodos();
-          const todoList = todos.todo_list.map((todo) => ({
-            task: todo.task,
-            user_id: todo.user_id,
-            completed: todo.completed,
-            created_at: todo.created_at
-          }));
-          setTodo(todoList);
-        } catch (error) {
-            console.log(error.message)
-        }
-    }
-    
+      try {
+        const todos = await getAllTodos();
+        const todoList = todos.todo_list.map((todo) => ({
+          todo_id: todo.todo_id,
+          task: todo.task,
+          user_id: todo.user_id,
+          completed: todo.completed,
+          created_at: todo.created_at,
+        }));
+        setTodo(todoList);
+        toast.success("Todos fetched successfully");
+      } catch (error) {
+        toast.error("Error fetching todos");
+        console.log(error.message);
+      }
+    };
+
     fetchTodos();
-  },[]);
+  }, []);
 
+  const todoRef = useRef();
 
-  const todoRef = useRef()
-
-  const todoSubmit= async (e) => {
+  const todoSubmit = async (e) => {
+    const id = uuidv4();
+    console.log(id)
     e.preventDefault();
-    try {
-      const response = await addTodo(todoRef.current.value);
-      console.log(response);
-      setTodo([...todos, 
-        {
+    const newtodo = {
       task: todoRef.current.value,
       user_id: "",
+      todo_id: id,
       completed: false,
       created_at: new Date().toISOString(),
-    },
-
-      ]);
-    } catch (error) {
-      console.log(error.message)
     }
-  }
 
+    try {
+      setTodo([
+        ...todos,
+        newtodo
+      ]);
+      await addTodo(newtodo);
+    } catch (error) {
+      toast.error("Error adding todo");
+      console.log(error.message);
+    }
+  };
 
   const markasCompleted = (index) => {
     setTodo((prev) =>
-      prev.map((todo, i) =>
-        i === index ? { ...todo, completed: !todo.completed } : todo
+      prev.map(
+        (todo, i) => {
+          if (i === index) {
+            handeCompleted(todo.todo_id, !todo.completed);
+            return { ...todo, completed: !todo.completed };
+          }
+          return todo;
+        }
+        // i === index ? { ...todo, completed: !todo.completed }  : todo
       )
     );
+  };
+
+  const handeCompleted = async (todo_id, isCompleted) => {
+    console.log(todo_id)
+    try {
+      const response = await markasCompletedDb(todo_id, isCompleted);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -100,7 +89,11 @@ export default function TodoPage() {
 
       <section>
         <div className="flex justify-center">
-          <ul className="bg-blue-100 w-2/3 p-3 rounded-md">
+          <ul
+            className={`${
+              todos.length != 0 ? "block" : "hidden"
+            } bg-blue-200 w-2/3 p-3 rounded-md`}
+          >
             {todos.map((todo, index) => {
               return (
                 <li
@@ -109,16 +102,19 @@ export default function TodoPage() {
                     todo.completed ? "line-through" : ""
                   } mb-2`}
                 >
-                  <p className="text-lg font-semibold">{todo.task}</p>
-                  <span >
+                  <p className="text-lg font-semibold">{todo.task} </p>
+                  <span>
                     <input
                       className="mx-3"
                       type="checkbox"
                       name=""
                       id=""
+                      checked={todo.completed}
                       onChange={() => markasCompleted(index)}
                     />
-                    <button className="bg-blue-300 p-1 rounded-lg hover:bg-blue-400 text-sm">delet</button>
+                    <button className="bg-blue-300 p-1 rounded-lg hover:bg-blue-400 text-sm">
+                      delet
+                    </button>
                   </span>
                 </li>
               );
@@ -126,8 +122,17 @@ export default function TodoPage() {
           </ul>
         </div>
         <form className="flex justify-center" onSubmit={todoSubmit}>
-        <input type="text" ref={todoRef} className="border border-gray-300 w-full mx-5 p-3 mt-2"/>
-            <button type="submit" className="bg-blue-300 p-1 rounded-lg hover:bg-blue-400 text-sm">Add</button>
+          <input
+            type="text"
+            ref={todoRef}
+            className="border border-gray-300 w-full mx-5 p-3 mt-2"
+          />
+          <button
+            type="submit"
+            className="bg-blue-300 p-1 rounded-lg hover:bg-blue-400 text-sm"
+          >
+            Add
+          </button>
         </form>
       </section>
     </>
