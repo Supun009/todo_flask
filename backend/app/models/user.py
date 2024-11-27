@@ -11,6 +11,7 @@ class User:
            
     @classmethod
     def get_user_by_username(cls, username):
+        print(username)
         try:
             return current_app.db.users.find_one({"username": username})
         except Exception as e:

@@ -3,6 +3,8 @@ import AuthButton from "../../components/authcomponents/AuthButton";
 import { useState, useRef } from 'react';
 import validaotor from 'validator';
 import DOMPurify from 'dompurify';
+import { Link } from "react-router-dom";
+import { login } from "../../services/AuthService";
 
 
 export default function LoginPage() {
@@ -29,7 +31,7 @@ export default function LoginPage() {
         }
 
         if (!password || password.length < 6)  {
-            errors.password = "Please enter a stronge passwordPassword should be at least 6 characters long";
+            errors.password = "Please enter password";
         }
 
         if (Object.keys(errors).length > 0) {
@@ -41,9 +43,19 @@ export default function LoginPage() {
         const sanitizedPassword = DOMPurify.sanitize(password);
 
         const data = { username: sanitizedUsername, password: sanitizedPassword };
-        console.log('Sanitized Data:', data);
+        handleLogin(data);
 
     }
+
+
+    const handleLogin = async(data) => {
+        try {
+          const response  = await login(data.username, data.password);
+          console.log(response.data);
+        } catch (error) {
+          console.log(error);
+        }
+      };
     
 
 
@@ -58,44 +70,36 @@ export default function LoginPage() {
             <section className="w-full max-w-md px-4">
                 <form onSubmit={handleSubmit} className="flex flex-col items-center ">
                     
-                    <InputFeild name = "username" type = "text" htmlFor ="username" id="username" label="Username" refer={usernameRef}/>
-                    {/* Display username error message */}
-                    {error.username && (
-                            <p className="text-red-500 text-sm mt-1">
-                                {error.username}
-                            </p>
-                        )}
+                    <InputFeild name = "username" type = "text" htmlFor ="username" id="username" label="Username" refer={usernameRef} error ={error.username ? error.username : ""}/>
+                    
+                    
 
-                    <InputFeild name = "password" type = "password" htmlFor ="password" id="password" label="Password" refer={passwordRef}/>
-                    {error.password && (
-                            <p className="text-red-500 text-sm mt-1">
-                                {error.password}
-                            </p>
-                        )}
+                    <InputFeild name = "password" type = "password" htmlFor ="password" id="password" label="Password" refer={passwordRef} error ={error.password ? error.password : ""}/>
+                   
                         
                     <AuthButton buttonName = "Login"/>
 
                     <div className="text-center">
                         <p className="text-gray-600">
                             New to here? {' '}
-                            <a 
-                                href="/signup" 
+                            <Link 
+                                to="/signup" 
                                 className="text-blue-500 hover:underline"
                             >
                                 Sign up
-                            </a>
+                            </Link>
                         </p>
                     </div>
 
                     <div className="text-center mt-3">
                         <p className="text-gray-600">
                             Forget password? {' '}
-                            <a 
-                                href="/resetpassword" 
+                            <Link 
+                                to="/resetpassword" 
                                 className="text-blue-500 hover:underline"
                             >
                                 Reset
-                            </a>
+                            </Link>
                         </p>
                     </div>
                 </form>
