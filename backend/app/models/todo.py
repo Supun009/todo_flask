@@ -28,8 +28,9 @@ class Todo:
     @classmethod
     def update_todo(cls, task, todo_id):
         try:
-            results = current_app.db.todos.update_one({"_id": todo_id}, {"$set": {"task": task}})
-            return results
+            results = current_app.db.todos.update_one({"todo_id": todo_id}, {"$set": {"task": task}})
+            n_modified = results.raw_result['nModified']
+            return n_modified;
         except Exception as e:
             print(f"Error updating todo: {e}")
             return None

@@ -47,6 +47,18 @@ export const deleteTodo = async(todo_id) => {
   try {
     const response =  await axiosInstance.delete(`/todos/delete/${todo_id}`);
    console.log(response.data);
+   return response.data;
+  } catch (error) {
+    console.log(error.message);
+    return "Something went wrong";
+  }
+}
+
+export const updateTodo = async(editedtask, todo_id) => {
+  try {
+    const response =  await axiosInstance.put(`/todos/update/${todo_id}`,{editedtask});
+   console.log(response);
+   return response.data;
   } catch (error) {
     console.log(error.message);
     return "Something went wrong";
