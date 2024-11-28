@@ -25,11 +25,11 @@ export default function LoginPage() {
     let errors = {};
     
     if (!email || email.length < 5 || email == "") {
-      errors.email = "Please enter a valid username";
+      errors.email = "Please enter a valid email";
     }
     
     if (!password || password.length < 6 || password.trim() === "" || password.length > 20) {
-      errors.password = "Please enter password";
+      errors.password = "Please enter a valid password";
     }
     
     if (Object.keys(errors).length > 0) {

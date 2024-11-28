@@ -40,21 +40,31 @@ def create_todo():
 
     return jsonify({"message": "Todo created successfully"}), 201
 
-@todo_bp.route('/todos/<todo_id>', methods=['PUT'])
+@todo_bp.route('/update/<todo_id>', methods=['PUT'])
 @jwt_required()
 def update_todo(todo_id):
-    user_id = get_jwt_identity()
+    try:
+        user_id = get_jwt_identity()
 
-    data = request.get_json()
+        data = request.get_json()
 
-    task = data.get("task")
+        task = data.get("editedtask")
+        print(task)
 
-    if not task:
-        return jsonify({"message": "Task is required"}), 400
+        if not task:
+            return jsonify({"message": "Task is required"}), 400
 
-    Todo.update_todo(task, todo_id)
+        results = Todo.update_todo(task, todo_id)
+        print(results)
 
-    return jsonify({"message": "Todo updated successfully"}), 200
+        if results > 0:
+            return jsonify({"message": "Todo updated successfully"}), 200
+        else:
+            return jsonify({"message": "Todo not found"}), 404
+
+        return jsonify({"message": "Todo updated successfully"}), 200
+    except Exception as e:
+        print(f"Error updating todo: {e}")  
 
 
 @todo_bp.route('/delete/<todo_id>', methods=['DELETE'])
