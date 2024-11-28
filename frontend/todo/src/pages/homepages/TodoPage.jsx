@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import { getAllTodos } from "../../services/TodoServices";
 import { addTodo } from "../../services/TodoServices";
 import { markasCompletedDb } from "../../services/TodoServices";
+import { deleteTodo } from "../../services/TodoServices";
 import { toast } from "react-toastify";
-import { v4 as uuidv4 } from 'uuid';
-
+import { v4 as uuidv4 } from "uuid";
+import FloatingButton from '../../components/home/FloatingButton'
 export default function TodoPage() {
   const [todos, setTodo] = useState([]);
+
 
   useEffect(() => {
     const fetchTodos = async () => {
@@ -30,30 +32,34 @@ export default function TodoPage() {
     fetchTodos();
   }, []);
 
-  const todoRef = useRef();
 
-  const todoSubmit = async (e) => {
-    const id = uuidv4();
-    console.log(id)
-    e.preventDefault();
+
+  const todoSubmit = async (text) => {
+    
+    if (text !== "") {
+      const id = uuidv4();
+    console.log(id);
     const newtodo = {
-      task: todoRef.current.value,
+      task: text,
+      deleted: false,
       user_id: "",
       todo_id: id,
       completed: false,
       created_at: new Date().toISOString(),
-    }
+    };
 
     try {
-      setTodo([
-        ...todos,
-        newtodo
-      ]);
+      setTodo([...todos, newtodo]);
       await addTodo(newtodo);
+
     } catch (error) {
       toast.error("Error adding todo");
       console.log(error.message);
     }
+    } else {
+      toast.error("Please enter a task");
+    }
+    
   };
 
   const markasCompleted = (index) => {
@@ -72,7 +78,7 @@ export default function TodoPage() {
   };
 
   const handeCompleted = async (todo_id, isCompleted) => {
-    console.log(todo_id)
+    console.log(todo_id);
     try {
       const response = await markasCompletedDb(todo_id, isCompleted);
       console.log(response.data);
@@ -81,60 +87,77 @@ export default function TodoPage() {
     }
   };
 
-  return (
-    <>
-      <header>
-        <h1 className="text-3xl font-bold flex justify-center mb-2">To Do</h1>
-      </header>
+  const handleDelete = (index) => {
+    setTodo((prev) => {
+      const todoToDelete = prev[index];
 
-      <section>
-        <div className="flex justify-center">
-          <ul
-            className={`${
-              todos.length != 0 ? "block" : "hidden"
-            } bg-blue-200 w-2/3 p-3 rounded-md`}
-          >
-            {todos.map((todo, index) => {
-              return (
-                <li
-                  key={index}
-                  className={`flex  justify-between ${
-                    todo.completed ? "line-through" : ""
-                  } mb-2`}
+      if (todoToDelete) {
+        handleDeleteDb(todoToDelete.todo_id);
+      }
+
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const handleDeleteDb = async (todo_id) => {
+    try {
+      const response = await deleteTodo(todo_id);
+      console.log(response.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto">
+        <header className="mb-6">
+          <h1 className="text-4xl font-extrabold text-center text-blue-800 tracking-tight">
+            Todo List
+          </h1>
+        </header>
+
+        <section className="bg-white shadow-xl rounded-lg overflow-hidden">
+          {todos.length > 0 ? (
+            <ul className="divide-y divide-gray-200">
+              {todos.map((todo, index) => (
+                <li 
+                  key={todo.todo_id} 
+                  className={`px-6 py-4 flex items-center justify-between transition-colors duration-300 
+                    ${todo.completed ? 'bg-gray-100 text-gray-500' : 'hover:bg-blue-50'}`}
                 >
-                  <p className="text-lg font-semibold">{todo.task} </p>
-                  <span>
+                  <p className={`text-lg flex-grow pr-4 ${todo.completed ? 'line-through' : ''}`}>
+                    {todo.task}
+                  </p>
+                  <div className="flex items-center space-x-3">
                     <input
-                      className="mx-3"
                       type="checkbox"
-                      name=""
-                      id=""
                       checked={todo.completed}
                       onChange={() => markasCompleted(index)}
+                      className="form-checkbox h-5 w-5 text-blue-600 rounded focus:ring-blue-500"
                     />
-                    <button className="bg-blue-300 p-1 rounded-lg hover:bg-blue-400 text-sm">
-                      delet
+                    <button
+                      onClick={() => handleDelete(index)}
+                      className="text-red-500 hover:text-red-700 transition-colors duration-200 hover:bg-red-100 p-2 rounded-full"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
                     </button>
-                  </span>
+                  </div>
                 </li>
-              );
-            })}
-          </ul>
-        </div>
-        <form className="flex justify-center" onSubmit={todoSubmit}>
-          <input
-            type="text"
-            ref={todoRef}
-            className="border border-gray-300 w-full mx-5 p-3 mt-2"
-          />
-          <button
-            type="submit"
-            className="bg-blue-300 p-1 rounded-lg hover:bg-blue-400 text-sm"
-          >
-            Add
-          </button>
-        </form>
-      </section>
-    </>
+              ))}
+            </ul>
+          ) : (
+            <div className="text-center py-10 text-gray-500">
+              <p className="text-xl">No todos yet. Add a new task!</p>
+            </div>
+          )}
+        </section>
+        
+        <FloatingButton toSubmit={todoSubmit} />
+      </div>
+    </div>
   );
+  
 }

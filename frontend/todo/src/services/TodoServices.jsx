@@ -18,6 +18,7 @@ export const getAllTodos = async () => {
 };
 
 export const addTodo = async (newtodo) => {
+  console.log(newtodo);
   try {
     const response = await axiosInstance.post("/todos/add-todo", { newtodo });
     if (response.status == 201) {
@@ -33,10 +34,21 @@ export const addTodo = async (newtodo) => {
 };
 export const markasCompletedDb = async(todo_id, isCompleted) => {
   console.log(todo_id)
+  console.log(isCompleted)
   try {
-    return await axiosInstance.post(`/todos/comleted/${todo_id}`, {isCompleted});
+    return await axiosInstance.post(`/todos/completed/${todo_id}`, {isCompleted});
    
   } catch (error) {
+    return "Something went wrong";
+  }
+}
+
+export const deleteTodo = async(todo_id) => {
+  try {
+    const response =  await axiosInstance.delete(`/todos/delete/${todo_id}`);
+   console.log(response.data);
+  } catch (error) {
+    console.log(error.message);
     return "Something went wrong";
   }
 }

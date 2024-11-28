@@ -29,12 +29,14 @@ def create_todo():
     newtodo = data.get("newtodo")
     task = newtodo.get("task")
     todo_id = newtodo.get("todo_id")
+    deleted = newtodo.get("deleted")
+    print(deleted)
     created_at = datetime.now()
 
     if not task:
         return jsonify({"message": "Task is required"}), 400
 
-    Todo.create_todo(task, user_id, todo_id, created_at)
+    Todo.create_todo(task, user_id, todo_id, created_at, deleted)
 
     return jsonify({"message": "Todo created successfully"}), 201
 
@@ -55,24 +57,35 @@ def update_todo(todo_id):
     return jsonify({"message": "Todo updated successfully"}), 200
 
 
-@todo_bp.route('/todos/<todo_id>', methods=['DELETE'])
+@todo_bp.route('/delete/<todo_id>', methods=['DELETE'])
 @jwt_required()
 def delete_todo(todo_id):
-    user_id = jwt_required()
+    try:
+        results  = Todo.delete_todo(todo_id)
+    
+        if results > 0:
+            return jsonify({"message": "Todo deleted successfully"}), 200
+        else:
+            return jsonify({"message": "Todo not found"}), 404
+    except Exception as e:
+        print(f"Error deleting todo: {e}")
+        return jsonify({"message": "Error deleting todo"}), 500
 
-    results  = Todo.delete_todo(todo_id)
-    if results.deleted_count > 0:
-        return jsonify({"message": "Todo deleted successfully"}), 200
-    else:
-        return jsonify({"message": "Todo not found"}), 404
+    
     
 
-@todo_bp.route("/comleted/<todo_id>", methods=["POST"])
+@todo_bp.route("/completed/<todo_id>", methods=["POST"])
 @jwt_required()
 def mark_as_completed(todo_id):
-    data = request.get_json()
-    isCompleted = data.get("isCompleted")
-    
-    Todo.mark_as_completed( todo_id, isCompleted)
+    try:
 
-    return jsonify({"message": "Todo marked as completed"}), 200
+        data = request.get_json()
+        
+        isCompleted = data.get("isCompleted")
+        
+        results =Todo.mark_as_completed( todo_id, isCompleted)
+        if results > 0:
+            return jsonify({"message": "Todo marked as completed"}), 200
+    except Exception as e:
+        print(f"Error marking todo as completed: {e}")
+        return jsonify({"message": "Error marking todo as completed"}), 500

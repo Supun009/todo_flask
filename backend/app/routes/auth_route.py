@@ -39,7 +39,7 @@ def login():
             return jsonify({"message": "User not found"}), 401
 
         ispasswordmatched = User.check_password(email, password)
-        print(ispasswordmatched)
+     
         if not ispasswordmatched:
             return jsonify({"message": "Invalid password"}), 401
         
