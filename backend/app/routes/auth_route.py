@@ -7,33 +7,42 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
-    data = request.get_json()
+    try:
+        data = request.get_json()
 
-    email = data.get("email")
-    username = data.get("username")
-    password = data.get("password")
+        email = data.get("email")
+        username = data.get("username")
+        password = data.get("password")
 
-    existinguser = User.get_user_by_email(email)
-    if existinguser:
-        return jsonify({"message": "User already exists"}), 400
-    
-    hashed_password = generate_password_hash(password)
+        existinguser = User.get_user_by_email(email)
+        if existinguser:
+            return jsonify({"message": "User already exists"}), 400
+        
+        hashed_password = generate_password_hash(password)
 
-    User.create_user(email, username, hashed_password)
+        results = User.create_user(email, username, hashed_password)
 
-    return jsonify({"message": "User registered successfully"}), 201
+        # return jsonify({"message": "User created  successfully"}), 201
+
+        if results:
+            return jsonify({"message": "User created  successfully"}), 201
+        else:
+            return jsonify({"message": "User not created"}), 404
+       
+    except Exception as e:
+        print(f"Error registering user: {e}")
+        return jsonify({"message": "Error registering user"}), 500
+
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
     try:
         data = request.get_json()
-        print(data)
 
         email = data.get("email")
         password = data.get("password")
 
         user = User.get_user_by_email(email)
-        print(user)
     
         if not user:
             return jsonify({"message": "User not found"}), 401

@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 import { v4 as uuidv4 } from "uuid";
 import FloatingButton from "../../components/home/FloatingButton";
 import EditForm from "../../components/home/EditForm";
-import TodoItem from "../../components/home/Todoitem";
+import TodoItem from "../../components/home/TodoItem";
 import { useOutletContext } from "react-router-dom";
 
 export default function TodoPage() {
@@ -207,6 +207,7 @@ export default function TodoPage() {
         <FloatingButton theme={isDarkMode} toSubmit={todoSubmit} />
 
         <EditForm
+          isDarkMode={isDarkMode}
           task={editTodo}
           isOpen={isOpen}
           onClose={() => setIsOpen(false)}
