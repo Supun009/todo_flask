@@ -3,9 +3,11 @@ import AuthButton from "../../components/authcomponents/AuthButton";
 import { useState, useRef } from "react";
 import DOMPurify from "dompurify";
 import { Link } from "react-router-dom";
-import { login } from "../../services/AuthService";
+import { login } from "../../api/AuthDataSource";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { validator } from "../../utils/authutils/validators";
+
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -18,27 +20,25 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    let errors = {}
+
+
     
-    const email = useremailRef.current.value.replace(/\s/g, "");
-    const password = passwordRef.current.value.replace(/\s/g, "");
+    const user = {
+      email: useremailRef.current.value.replace(/\s/g, ""),
+      password: passwordRef.current.value.replace(/\s/g, ""),
+    };
+
+    validator(user, setError, errors);
     
-    let errors = {};
-    
-    if (!email || email.length < 5 || email == "") {
-      errors.email = "Please enter a valid email";
-    }
-    
-    if (!password || password.length < 6 || password.trim() === "" || password.length > 20) {
-      errors.password = "Please enter a valid password";
-    }
-    
-    if (Object.keys(errors).length > 0) {
-      setError(errors);
+    if (Object.keys(errors).length > 1) {
+      console.log(errors)
       return;
     }
     
-    const sanitizedUsername = DOMPurify.sanitize(email);
-    const sanitizedPassword = DOMPurify.sanitize(password);
+    const sanitizedUsername = DOMPurify.sanitize(user.email);
+    const sanitizedPassword = DOMPurify.sanitize(user.password);
     
     const data = { email: sanitizedUsername, password: sanitizedPassword };
     handleLogin(data);

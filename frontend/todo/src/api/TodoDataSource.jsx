@@ -3,9 +3,7 @@ import axiosInstance from "./AxiosInsance";
 export const getAllTodos = async () => {
   try {
     const response = await axiosInstance.get("/todos/get-todos");
-    if (response.status === 200) {
-      return response.data;
-    }
+    return response;
   } catch (error) {
     if (error.response) {
       return error.response.data.message;
@@ -16,10 +14,8 @@ export const getAllTodos = async () => {
 };
 
 export const addTodo = async (newtodo) => {  try {
-    const response = await axiosInstance.post("/todos/add-todo", { newtodo });
-    if (response.status == 201) {
-      return response.data;
-    }
+    return await axiosInstance.post("/todos/add-todo", { newtodo });
+    
   } catch (error) {
     if (error.response) {
       return error.response.data.message;
@@ -41,7 +37,7 @@ export const markasCompletedDb = async (todo_id, isCompleted) => {
 export const deleteTodo = async (todo_id) => {
   try {
     const response = await axiosInstance.delete(`/todos/delete/${todo_id}`);
-    return response.data;
+    return response;
   } catch (error) {
     return "Something went wrong";
   }
@@ -52,7 +48,7 @@ export const updateTodo = async (editedtask, todo_id) => {
     const response = await axiosInstance.put(`/todos/update/${todo_id}`, {
       editedtask,
     });
-    return response.data;
+    return response
   } catch (error) {
     return "Something went wrong";
   }
