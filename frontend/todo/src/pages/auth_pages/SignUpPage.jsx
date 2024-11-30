@@ -2,67 +2,52 @@ import React from "react";
 import InputFeild from "../../components/authcomponents/InputFeild";
 import AuthButton from "../../components/authcomponents/AuthButton";
 import { useState, useRef } from "react";
-// import validaotor from "validator";
 import DOMPurify from "dompurify";
 import { Link } from "react-router-dom";
-import { signup } from "../../services/AuthService";
-import { useNavigate } from "react-router-dom";
+import { signup } from "../../api/AuthDataSource";
 import { toast } from "react-toastify";
+import { validator } from "../../utils/authutils/validators";
 
 export default function SignUpPage() {
-  const navigate = useNavigate();
   const emailRef = useRef();
   const usernameRef = useRef();
   const passwordRef = useRef();
+  
 
   const [error, setError] = useState({
-    email: "",
-    username: "",
-    password: "",
+    // email: "",
+    // username: "",
+    // password: "",
   });
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const email = emailRef.current.value;
-    const username = usernameRef.current.value;
-    const password = passwordRef.current.value;
+    let errors = {}
 
-    let errors = {};
+    const user = {
+      email: emailRef.current.value.replace(/\s/g, ""),
+      username: usernameRef.current.value.replace(/\s/g, ""),
+      password: passwordRef.current.value.replace(/\s/g, ""),
+    };
 
-    if (!email || email.length > 30 || email.trim() == "") {
-      errors.email = "Please enter a valid email";
-    }
+    validator(user, setError, errors);
 
-    if (
-      !username ||
-      username.trim() === "" ||
-      username.length < 3 ||
-      username.length > 20
-    ) {
-      errors.username = "Please enter a valid username";
-    }
 
-    if (
-      !password ||
-      password.length < 6 ||
-      password.trim() === "" ||
-      password.length > 20
-    ) {
-      errors.password =
-        "Please enter a stronge password Password should be at least 6 characters long";
-    }
 
     if (Object.keys(errors).length > 0) {
-      setError(errors);
+      console.log(errors)
       return;
     }
 
-    const sanitizedUsername = DOMPurify.sanitize(username);
-    const sanitizedPassword = DOMPurify.sanitize(password);
+
+    const sanitizeEmail = DOMPurify.sanitize(user.email);
+    const sanitizedUsername = DOMPurify.sanitize(user.username);
+    const sanitizedPassword = DOMPurify.sanitize(user.password);
 
     const data = {
-      email,
+      email : sanitizeEmail,
       username: sanitizedUsername,
       password: sanitizedPassword,
     };

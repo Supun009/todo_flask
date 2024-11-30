@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import Hamburger from "hamburger-react";
-import { logout } from "../../services/AuthService";
+import { logout } from "../../api/AuthDataSource";
 import { useNavigate } from "react-router-dom";
 
 export default function Navbar({ theme }) {
